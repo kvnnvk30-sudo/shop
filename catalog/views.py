@@ -1,7 +1,19 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from .forms import RegisterForm
 from .models import Item
 
-def catalog_home(request):
-    # Берем только доступные товары и сортируем: новые — сверху
-    items = Item.objects.filter(is_available=True).order_by('-created_at')
-    return render(request, 'catalog/index.html', {'items': items})
+def home(request):
+    items = Item.objects.all()
+    return render(request, 'catalog/home.html', {'items': items})
+
+def register(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('catalog:home')
+    else:
+        form = RegisterForm()
+    return render(request, 'catalog/register.html', {'form': form})

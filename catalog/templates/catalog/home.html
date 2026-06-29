@@ -1,0 +1,29 @@
+{% extends 'catalog/base.html' %}
+{% block title %}Каталог{% endblock %}
+
+{% block content %}
+<h2 class="text-center mb-5">КАТАЛОГ ТОВАРОВ</h2>
+
+<div class="row g-4">
+    {% for item in items %}
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top" style="height: 220px; object-fit: cover;" alt="{{ item.title }}">
+                {% else %}
+                    <div class="bg-secondary bg-opacity-10" style="height: 220px;"></div>
+                {% endif %}
+                <div class="card-body text-center">
+                    <h6 class="card-title">{{ item.title }}</h6>
+                    <p class="text-muted mb-0">{{ item.price }} ₴</p>
+                    {% if not item.is_available %}
+                        <span class="badge bg-secondary mt-2">Нет в наличии</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="text-center text-muted">Товаров пока нет</p>
+    {% endfor %}
+</div>
+{% endblock %}
