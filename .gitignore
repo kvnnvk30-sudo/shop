@@ -9,4 +9,5 @@ db.sqlite3
 .vscode/
 .idea/
 staticfiles/
-media/
+media/.coverage
+htmlcov/
