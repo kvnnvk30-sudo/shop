@@ -4,12 +4,12 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from catalog.models import Item
 
+
 @pytest.fixture
-def home_setup(client, db):
-    user = User.objects.create_user(username='Nick', password='grop9302')
-    item = Item.objects.create(title='car', price=15.00, is_available=True)
-    response = client.get(reverse('catalog:home'))
-    return SimpleNamespace(user=user, item=item, response=response)
+def home_response(client, db):
+    User.objects.create_user(username='Nick', password='grop9302')
+    Item.objects.create(title='car', price=15.00, is_available=True)
+    return client.get(reverse('catalog:home'))
 
 @pytest.fixture
 def login_setup(client, db):

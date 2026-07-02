@@ -1,26 +1,19 @@
-from decimal import Decimal
 from django.db import models
-from django.core.exceptions import ValidationError
-
-# Кастомный валидатор для проверки строгой цены
-def validate_strictly_150(value):
-    if value != Decimal('150.00'):
-        raise ValidationError("Цена этого товара может быть только 150.00!")
+from django.core.validators import MinValueValidator
+from decimal import Decimal
 
 class Item(models.Model):
-    title = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-    
-    # Меняем default на 150 и вешаем наш кастомный валидатор
+    title = models.CharField(max_length=255, verbose_name="Название товара")
+    description = models.TextField(blank=True, null=True, verbose_name="Описание")
     price = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
-        default=Decimal('150.00'),
-        validators=[validate_strictly_150]
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        verbose_name="Цена"
     )
-    image = models.ImageField(upload_to='items/', blank=True, null=True)
-    is_available = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='catalog/', blank=True, null=True, verbose_name="Изображение")
+    is_available = models.BooleanField(default=True, verbose_name="Доступно")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     def __str__(self):
         return self.title
