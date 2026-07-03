@@ -1,19 +1,38 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import models
-from django.core.validators import MinValueValidator
-from decimal import Decimal
+from pydantic import ValidationError as PydanticValidationError
+from catalog.schemas import ItemSchema
+
 
 class Item(models.Model):
-    title = models.CharField(max_length=255, verbose_name="Название товара")
-    description = models.TextField(blank=True, null=True, verbose_name="Описание")
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
-        verbose_name="Цена"
-    )
-    image = models.ImageField(upload_to='catalog/', blank=True, null=True, verbose_name="Изображение")
-    is_available = models.BooleanField(default=True, verbose_name="Доступно")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    title = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to="products/", blank=True, null=True)
+    is_available = models.BooleanField(default=True)  # Вернули поле на место
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.title
+    def clean(self):
+        super().clean()
+
+        image_val = self.image.name if self.image else None
+
+        try:
+            # Передаем все данные, включая искусно возвращенное поле
+            ItemSchema(
+                title=self.title,
+                price=self.price,
+                image=image_val,
+                is_available=self.is_available,
+            )
+        except PydanticValidationError as e:
+            django_errors = {}
+            for error in e.errors():
+                loc = error["loc"][0]
+                msg = error["msg"]
+                django_errors[loc] = msg
+
+            raise DjangoValidationError(django_errors)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
